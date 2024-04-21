@@ -1,5 +1,6 @@
-# graphql/schema.py
 import graphene
+from models import ToDoModel  # Import ToDoModel from models.py
+from graphql_api import resolvers
 
 
 class ToDo(graphene.ObjectType):
@@ -11,11 +12,7 @@ class ToDo(graphene.ObjectType):
 
 
 class Query(graphene.ObjectType):
-    todos = graphene.List(ToDo)
-
-    def resolve_todos(self, info):
-        # Implement logic to fetch all To-Do items from database
-        pass
+    todos = graphene.List(ToDo, resolver=resolvers.list_todos)
 
 
 class CreateToDo(graphene.Mutation):
@@ -27,8 +24,7 @@ class CreateToDo(graphene.Mutation):
     todo = graphene.Field(ToDo)
 
     def mutate(self, info, title, description, time):
-        # Implement logic to create a new To-Do item
-        pass
+        return resolvers.create_todo(info, title, description, time)
 
 
 class DeleteToDo(graphene.Mutation):
@@ -38,8 +34,7 @@ class DeleteToDo(graphene.Mutation):
     success = graphene.Boolean()
 
     def mutate(self, info, id):
-        # Implement logic to delete a To-Do item
-        pass
+        return resolvers.delete_todo(info, id)
 
 
 class EditToDo(graphene.Mutation):
@@ -52,8 +47,7 @@ class EditToDo(graphene.Mutation):
     todo = graphene.Field(ToDo)
 
     def mutate(self, info, id, title=None, description=None, time=None):
-        # Implement logic to edit a To-Do item
-        pass
+        return resolvers.edit_todo(info, id, title, description, time)
 
 
 class Mutation(graphene.ObjectType):

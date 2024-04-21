@@ -1,7 +1,6 @@
 # models.py
-from flask_sqlalchemy import SQLAlchemy
+from graphql_api import db  # Import db from your Flask app
 
-db = SQLAlchemy()
 
 class ToDoModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
