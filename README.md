@@ -1,2 +1,2 @@
 ﻿# Todo-Graphql
-![Image Description](static/homepage.png)
+![Image Description](static/hompage.png)
