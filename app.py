@@ -1,5 +1,6 @@
 import json
-from flask import redirect, url_for, session, render_template,abort
+import stripe
+from flask import redirect, url_for, session, render_template, abort, jsonify, request
 from flask_graphql import GraphQLView
 from graphql_api import app, db
 from graphql_api.schema import schema
@@ -17,6 +18,13 @@ appConf = {
 
 app.secret_key = appConf.get("FLASK_SECRET")
 
+stripe_keys = {
+    "publishable_key": "pk_test_51P8QFkSAQxKJZ34tJiOcX9ZulhAAbcYsBo2SM9UI3zgpXHW3NNKEJ9CgdMHxT9tvdB3EhgHrRZQ6lQtxemoOLmze00L6kHK6rP",
+    "secret_key": "sk_test_51P8QFkSAQxKJZ34tp7EcgEauz3LgqsC3T0achtgzQmbsJFzZ8WSoGeyNW92LzYW6x1O0P7GYQydpHEgnBO1Ugnq400g5lnJVdP",
+}
+
+stripe.api_key = stripe_keys["secret_key"]
+
 oauth = OAuth(app)
 oauth.register(
     "myApp",
@@ -30,6 +38,11 @@ oauth.register(
 )
 
 
+# @app.route("/")
+# def index():
+#     return render_template("pro.html")
+
+
 @app.route("/")
 def home():
     return render_template(
@@ -39,15 +52,16 @@ def home():
     )
 
 
-
 # Initialize Flask-GraphQL
 app.add_url_rule('/graphql', view_func=GraphQLView.as_view('graphql', schema=schema, graphiql=True))
+
 
 @app.route("/callback")
 def callback():
     token = oauth.myApp.authorize_access_token()
     session["user"] = token
     return redirect(url_for("home"))
+
 
 @app.route("/login")
 def login():
@@ -80,6 +94,69 @@ def logout():
             quote_via=quote_plus,
         )
     )
+
+
+@app.route("/config")
+def get_publishable_key():
+    stripe_config = {"publicKey": stripe_keys["publishable_key"]}
+    return jsonify(stripe_config)
+
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    domain_url = "http://127.0.0.1:5000/"
+    try:
+        # Create new Checkout Session for the order
+        checkout_session = stripe.checkout.Session.create(
+            success_url=domain_url + "success?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=domain_url + "cancelled",
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=[
+                {
+                    "price": "your_price_id",  # Replace "your_price_id" with the actual Price ID
+                    "quantity": 1,
+                }
+            ]
+        )
+        return jsonify({"sessionId": checkout_session["id"]})
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+
+
+
+@app.route("/success")
+def success():
+    return render_template("success.html")
+
+
+@app.route("/cancelled")
+def cancelled():
+    return render_template("cancelled.html")
+
+
+@app.route("/webhook", methods=["POST"])
+def stripe_webhook():
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get("Stripe-Signature")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, stripe_keys["endpoint_secret"]
+        )
+
+    except ValueError as e:
+        # Invalid payload
+        return "Invalid payload", 400
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return "Invalid signature", 400
+
+    # Handle the checkout.session.completed event
+    if event["type"] == "checkout.session.completed":
+        print("Payment was successful.")
+        # TODO: run some custom code here
+
+    return "Success", 200
 
 
 if __name__ == '__main__':

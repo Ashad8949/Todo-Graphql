@@ -43,12 +43,12 @@
                     <input type="text" id="todoTitle" placeholder="Title" required>
                     <input type="text" id="todoDescription" placeholder="Description" required>
                     <input type="text" id="todoTime" placeholder="Time" required>
-                    <input type="file" id="imageInput" accept="image/*">
                     <p><button type="submit">Submit</button></p>
                 </form>
             </div>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/todo.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/stripe.js') }}"></script>
 </body>
 </html>
