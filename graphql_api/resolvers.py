@@ -1,6 +1,7 @@
 from models import ToDoModel
 from database import db
 
+
 def list_todos(self, info):
     return ToDoModel.query.all()
 
