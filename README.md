@@ -1,5 +1,5 @@
 ﻿# Todo-Graphql
-### Hompage
+### Homepage
 ![Image Description](static/homepage.png)
 
 ### GraphQL Web Interface Creating New Task 
