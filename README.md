@@ -7,3 +7,6 @@
 
 ### 3.	User login with keycloak
 ![Image Description](static/signin.png)
+
+### 4.	Stripe Payments Integration(for Pro Licence)
+![Image Description](static/payments.png)
