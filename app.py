@@ -1,8 +1,8 @@
 import json
 import stripe
-from flask import redirect, url_for, session, render_template, abort, jsonify, request
+from flask import redirect, url_for, session, render_template, abort, jsonify
 from flask_graphql import GraphQLView
-from graphql_api import app, db
+from graphql_api import app
 from graphql_api.schema import schema
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import quote_plus, urlencode
@@ -32,15 +32,9 @@ oauth.register(
     client_secret=appConf.get("OAUTH2_CLIENT_SECRET"),
     client_kwargs={
         "scope": "openid profile email",
-        # 'code_challenge_method': 'S256'  # enable PKCE
     },
     server_metadata_url=f'{appConf.get("OAUTH2_ISSUER")}/.well-known/openid-configuration',
 )
-
-
-# @app.route("/")
-# def index():
-#     return render_template("pro.html")
 
 
 @app.route("/")
@@ -101,6 +95,7 @@ def get_publishable_key():
     stripe_config = {"publicKey": stripe_keys["publishable_key"]}
     return jsonify(stripe_config)
 
+
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     domain_url = "http://127.0.0.1:5000/"
@@ -110,18 +105,17 @@ def create_checkout_session():
             success_url=domain_url + "success?session_id={CHECKOUT_SESSION_ID}",
             cancel_url=domain_url + "cancelled",
             payment_method_types=["card"],
-            mode="payment",
+            mode="subscription",
             line_items=[
                 {
-                    "price": "your_price_id",  # Replace "your_price_id" with the actual Price ID
+                    "price": "price_1P8QR2SAQxKJZ34tzJu8Ztj2",
                     "quantity": 1,
                 }
             ]
         )
-        return jsonify({"sessionId": checkout_session["id"]})
     except Exception as e:
         return jsonify(error=str(e)), 500
-
+    return redirect(checkout_session.url, code=303)
 
 
 @app.route("/success")
@@ -132,31 +126,6 @@ def success():
 @app.route("/cancelled")
 def cancelled():
     return render_template("cancelled.html")
-
-
-@app.route("/webhook", methods=["POST"])
-def stripe_webhook():
-    payload = request.get_data(as_text=True)
-    sig_header = request.headers.get("Stripe-Signature")
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, stripe_keys["endpoint_secret"]
-        )
-
-    except ValueError as e:
-        # Invalid payload
-        return "Invalid payload", 400
-    except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
-        return "Invalid signature", 400
-
-    # Handle the checkout.session.completed event
-    if event["type"] == "checkout.session.completed":
-        print("Payment was successful.")
-        # TODO: run some custom code here
-
-    return "Success", 200
 
 
 if __name__ == '__main__':

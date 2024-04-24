@@ -11,12 +11,16 @@
     <nav>
         <div class="nav-container">
             <h1>Todo App GraphQL</h1>
-            <button class="pro-button"><a href="/pro">Pro</a></button> <!-- Add class for Pro button -->
+            <form action="/create-checkout-session" method="POST">
+              <button type="submit" class="pro-button">
+                Pro
+              </button>
+            </form>
             {% if session %}
                 <p>Hello, {{session.userinfo.name}}!</p>
                 <button class="logout-button"><a href="/logout">Logout</a></button> <!-- Add class for Logout button -->
             {% else %}
-                <p>Welcome Guest</p>
+                <p>Welcome, Guest</p>
                 <button class="login-button"><a href="/login">Login</a></button> <!-- Add class for Login button -->
             {% endif %}
         </div>
