@@ -1,12 +1,12 @@
 ﻿# Todo-Graphql
 ### Homepage
-![Image Description](static/homepage.png)
+![Image Description](static/images/homepage.png)
 
 ### GraphQL Web Interface Creating New Task 
-![Image Description](static/create.png)
+![Image Description](static/images/create.png)
 
 ### 3.	User login with keycloak
-![Image Description](static/signin.png)
+![Image Description](static/images/signin.png)
 
 ### 4.	Stripe Payments Integration(for Pro Licence)
-![Image Description](static/payments.png)
+![Image Description](static/images/payments.png)
